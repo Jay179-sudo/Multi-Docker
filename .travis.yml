@@ -1,0 +1,18 @@
+language: generic
+sudo: required
+services:
+  docker
+before_install:
+  - docker build -t jaypd/react-test -f ./client/Dockerfile.dev ./client
+script:
+  - docker run -e CI=true jaypd/react-test npm test
+after_success:
+  - docker build -t jaypd/multi-client ./client
+  - docker build -t jaypd/multi-nginx ./nginx
+  - docker build -t jaypd/multi-server ./server
+  - docker build -t jaypd/multi-worker ./worker
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+  - docker push jaypd/multi-client
+  - docker push jaypd/multi-nginx
+  - docker push jaypd/multi-server
+  - docker push jaypd/multi-worker
